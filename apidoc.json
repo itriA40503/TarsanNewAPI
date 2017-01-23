@@ -1,0 +1,8 @@
+{
+  "name": "Tarsan API",
+  "version": "0.1.0",
+  "description": "New Tarsan API service",
+  "template": {
+    "withCompare": false
+  }
+}

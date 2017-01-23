@@ -1,0 +1,14 @@
+/* jshint indent: 2 */
+
+module.exports = function(sequelize, DataTypes) {
+  return sequelize.define('ad_group', {
+    ad_group_id: {
+      type: DataTypes.BIGINT,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true
+    }
+  }, {
+    tableName: 'ad_group'
+  });
+};
