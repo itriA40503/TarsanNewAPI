@@ -29,6 +29,7 @@ database
 
 //#Define
 var machine = database.import("../db_models/machine.js");
+var webLog = database.import("../db_models/web_log.js");
 //#Print log
 var log= function(inst){
 	console.dir(inst.get());
@@ -116,8 +117,6 @@ router.get('/:mac',function(req,res){
   }
     
 });
-
-
 
 router.get('/',function(req,res){
   let info = {};
