@@ -59,7 +59,9 @@ router.get('/:mac',function(req,res){
   // msg.headers = req.headers;
   // msg.content_type = req.accepts('Application/json');
   //# check "Application/json"
-  if((req.accepts('*/*')== false)&&(req.accepts('Application/json')!=false)){  
+  // console.log(req.get('Content-Type'));
+  let content_type = req.get('Content-Type');
+  if(content_type === "application/json"){  
     info.mac_addr = req.params.mac;  
     //# Check is mac address
     var re = /^(([A-Fa-f0-9]{2}[:]){5}[A-Fa-f0-9]{2}[,]?)+$/;    
