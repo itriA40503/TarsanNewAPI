@@ -11,6 +11,7 @@ var runad = require('./routes/runad');
 
 var testing = require('./routes/testing');
 var machine = require('./routes/machine_api');
+var webLog = require('./routes/webLog_api');
 var app = express();
 
 // view engine setup
@@ -24,7 +25,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.set('view engine', 'ejs'); 
 app.set('trust proxy', true);
 
 app.use('/', index);
@@ -33,6 +34,7 @@ app.use('/runad',runad);
 
 app.use('/testing',testing);
 app.use('/machine',machine);
+app.use('/webLog',webLog);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
@@ -45,10 +47,15 @@ app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
+  console.log(err);
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
+  res.render('star',{  
+   title: err.status,
+   status: res.locals.error,
+   msg:err.message  
+  });    
 });
 
 module.exports = app;
