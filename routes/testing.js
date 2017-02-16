@@ -122,6 +122,7 @@ router.get('/',function(req,res){
   let info = {};
 	console.log(req.headers.accept);
   console.log(req.accepts('*/*'));
+  console.log(moment("2017-02-05").day());
   // msg.headers = req.headers;
   info.content_type = req.accepts('Application/json');
   if((req.accepts('*/*')== false)&&(req.accepts('Application/json')!=false)){  

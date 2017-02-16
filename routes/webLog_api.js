@@ -43,7 +43,7 @@ router.post('/',function(req,res){
   // info.keyword = req.body.keyword;
   info.url = req.body.url;  
   info.domain = req.body.domain;  
-  info.referer = req.body.referer;
+  info.referer = req.body.referer;  
   info.is_showAd =  req.body.is_showAd;
   info.machine = req.body.machine;
 
