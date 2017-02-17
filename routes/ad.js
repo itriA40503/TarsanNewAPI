@@ -1,10 +1,12 @@
 var express = require('express');
 var router = express.Router();
 var moment = require('moment');
+var CryptoJS = require("crypto-js");
 var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
 var patternUtil = require('./patternUtil');
+
 
 //#Define model
 var ad            = ad_platform.import("../db_models/ad.js");
@@ -17,7 +19,53 @@ var web_pattern   = ad_platform.import("../db_models/web_pattern.js");
 var available_js  = ad_platform.import("../db_models/available_js.js");
 var pattern2js    = ad_platform.import("../db_models/pattern2js.js");
 
-
+/**
+ * @api {post} /Ad/run Post data then get Ad to publish.
+ * @apiVersion 0.1.0
+ * @apiName run
+ * @apiGroup Ad
+ * 
+ * @apiDescription 
+ * <p><b>This api is core of system.</b></p>
+ * #1 Find :
+ * <ul>
+ * <li>keyword</li>
+ * <li>class of domain</li>
+ * <li>schudel</li>
+ * </ul>
+ * #2 Matching :
+ * <ul>
+ * <li>keyword</li>
+ * <li>class of domain</li>
+ * <li>schudel</li>
+ * <li>charge limit</li>
+ * <li>available js script (showing type)</li>
+ * </ul>
+ * #3 Algorithm of choosing publish ad
+ * 
+ * 
+ *
+ * @apiParam {String} ip Ip address.
+ * @apiParam {String} url Browsing Url.
+ * @apiParam {String} domain Domain of url.
+ * @apiParam {String} referer Referer of url.
+ * @apiParam {String} machine Name of using machine.
+ *
+ * @apiSuccess {String} keyword The keyword from url.
+ * @apiSuccess {String} ad_id The id of publish Ad.
+ * @apiSuccess {String} url The url of publish Ad.
+ * @apiSuccess {String} js_content The js code for publish Ad. * 
+ *  
+ * @apiSuccessExample {json} Success-Response:
+ * HTTP/1.1 200 OK
+ * {
+ *  "keyword": "keyword",
+ *  "ad_id": "1",
+ *  "url": "http://nOOnECaRe.eNGinEeR.jpg",
+ *  "js_content": "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js\"></script><script>$(function(){$(window).load(function(){$('#top-bar').fadeIn(6500);$('#top-bar').fadeOut(8500);});});</script>"
+ * }
+ * 
+ */
 router.post('/run',function(req,res){
   let info = {};
   //# for test
@@ -214,7 +262,7 @@ router.post('/run',function(req,res){
             let runAd = {};
             runAd.keyword = decodeURIComponent(kw);
             runAd.ad_id = ad.ad_id;
-            runAd.url_href = ad.url_href;
+            // runAd.url_href = ad.url_href;
             runAd.url = ad.url;
             runAd.js_content = re.js_content;
             console.log(runAd);
@@ -231,6 +279,145 @@ router.post('/run',function(req,res){
     }    
   });
 });
+
+/**
+ * @api {post} /Ad/log Logging showing ad
+ * @apiVersion 0.1.0
+ * @apiName log show
+ * @apiGroup Ad
+ * 
+ * @apiDescription 
+ * <b>Will give a hashkey for logging clicked ad.<b>
+ * The hashkey decrypt will be a object.
+ * 
+ * @apiParam {String} ad_id The id of ad.
+ * @apiParam {String} ip Ip address.
+ * @apiParam {String} url Browsing Url.
+ * @apiParam {String} domain Domain of url.
+ * @apiParam {String} referer Referer of url.
+ * @apiParam {String} machine Name of using machine.
+ *
+ *  
+ * @apiSuccessExample Success-Response:
+ * HTTP/1.1 200 OK
+ * 
+ * U2FsdGVkX1+gTxS2xIa2pJWaMlIkRBtH6iFnsFAQS7XgF_+On99afJVh341CjNZUF2j9S7Gaarg_sxncN1Hp7htX1jFeSebvioG2a61btt6e9lx8MkYybHK6sVBji6igeXappGKAAO3D2mShxK9OR9OksEFy3v2c1uamQP6BMHXVjg+lzRfuuupZFTtFHKNEhHjTwTiozZhTqgxFc3biatK9osIb8p_NNqVOuHq2HHiDH__TxdLnOIxzZsb_O2EAH0Vtd62H2V+eaXhPLcdOkir5Fckla2ShnUPmYunPJAMCLDS4e_rOEmV1KcycosdeIa2095bmkvJCl1Im4CKhZgvxIT5UiHyoeoM8D_48DSZGo5TQ5UfaicjfqjG4AAAG
+ * 
+ */
+router.post('/log',function(req,res){
+  let info = {};
+  info.ad_id    = req.body.ad_id;
+  info.url      = req.body.url;  
+  info.domain   = req.body.domain;
+  info.ip       = req.body.ip;
+  info.referer  = req.body.referer;
+  info.keyword  = req.body.keyword;
+  info.machine  = req.body.machine;
+  info.datetime = moment().format('YYYY-MM-DD hh:mm:ss a');
+
+  let hashkey = patternUtil.AdEncrypt(info);
+
+  if(req.body.ad_id!=null){
+    ad.update({
+        showtimes : ad.sequelize.literal('showtimes+1')
+    },{
+      where:{
+        ad_id : info.ad_id
+      }
+    }).then(function(re){
+      if(re[0] !=0){
+        ad_log.create({
+          ad_id           : info.ad_id,
+          keyword         : info.keyword,
+          ip              : info.ip,
+          url             : info.url,
+          domain          : info.domain,
+          referer         : info.referer,
+          is_show         : true,
+          is_click        : false,
+          hashkey         : hashkey,
+          machine_name    : info.machine,
+          create_datetime : info.datetime
+        });
+        res.send(hashkey);
+      }else{
+        res.send("ad_id Not exists");
+      }
+    });
+    
+  }else{
+    res.send("null");
+  }    
+});
+
+/**
+ * @api {get} /Ad/log/:id/:hashkey Logging clicked ad
+ * @apiVersion 0.1.0
+ * @apiName log click
+ * @apiGroup Ad
+ * 
+ * @apiDescription 
+ * <b>Will redirect page and logging clicked ad.<b> 
+ * 
+ * @apiParam {String} ad_id The id of ad.
+ * @apiParam {String} hashkey The hashkey is encrypt by AES.
+ *
+ */
+router.get('/log/:ad_id/:hashkey',function(req,res){
+  let info = patternUtil.AdDecrypt(req.params.hashkey);
+
+  Sequelize.Promise.join(
+    //# check ad_log have same hash key
+    ad_log.findAll({
+      where:{
+          hashkey : req.params.hashkey
+        }
+    }),
+    ad.findOne({
+      where:{
+          ad_id : req.params.ad_id
+      }
+    })
+  ).spread(function(matchHashkey, findAdHref){
+    if(findAdHref == null){
+      res.send("ad_id ERROR");
+    }
+    console.log("matchHashkey.length:"+matchHashkey.length);
+    if(matchHashkey !=null && matchHashkey.length === 1){
+      if(info != null){
+        ad_log.create({
+          ad_id           : info.ad_id,
+          keyword         : info.keyword,
+          ip              : info.ip,
+          url             : info.url,
+          domain          : info.domain,
+          referer         : info.referer,
+          is_show         : false,
+          is_click        : true,
+          hashkey         : req.params.hashkey,
+          machine_name    : info.machine,
+          create_datetime : moment().format('YYYY-MM-DD hh:mm:ss a')
+        });
+        ad.update({
+          clicktimes : ad.sequelize.literal('clicktimes+1')
+        },
+        {      
+          where:{
+              ad_id : req.params.ad_id
+          }
+        })
+        res.redirect(findAdHref.url_href);
+      }else{
+        console.log("Hashkey error");
+        res.redirect(findAdHref.url_href);
+      }
+    }else{
+      console.log("Already have been log");
+      res.redirect(findAdHref.url_href);
+    }
+  });    
+});
+
 
 router.get('/',function(req,res){
   let info = {};
