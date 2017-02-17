@@ -1,11 +1,38 @@
 var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
+var CryptoJS = require("crypto-js");
 
-//#Define
+//#Define models
 var webPattern    = ad_platform.import("../db_models/web_pattern.js");
 var available_js  = ad_platform.import("../db_models/available_js.js");
 var pattern2js    = ad_platform.import("../db_models/pattern2js.js");
+//#Secert key for ad Encrypt & decrypt
+var secertkey = "lifeOnMars";
+
+exports.AdEncrypt = function(obj){
+  //# Encrypt
+  let ciphertext = CryptoJS.AES.encrypt(JSON.stringify(obj), secertkey);
+  // var ciphertext = CryptoJS.TripleDES.encrypt(req.params.str, 'secret key 123');
+  let Encrypt_Result = ciphertext.toString().replace(/\//g,"_");
+  // console.log("AdEncrypt:"+Encrypt_Result);
+  return Encrypt_Result;
+};
+
+exports.AdDecrypt = function(input){
+  //# Decrypt 
+  // console.log("###"+input);
+  let input_ = input.replace(/_/g,"/");
+  // console.log("#######"+input_);
+  let bytes  = CryptoJS.AES.decrypt(input_, secertkey);
+  try{
+    let Decrypt_obj = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    console.log("AdDecrypt:"+Decrypt_obj);
+    return Decrypt_obj;
+  }catch(err){
+    return null;
+  }
+};
 
 exports.getRegex = function(Urldomain){
 
@@ -63,8 +90,7 @@ exports.getAd_Js = function(id, type){
       .findOne({
         where: {available_js_id: id} 
       });
-  }
-  
+  }  
 };
 
 exports.getKeyword = function(domain, url){
@@ -149,6 +175,7 @@ exports.getAdBy_algorithm = function(ad_prob){
     tmp_ad.prob = Math.ceil(
       (ad_prob.show[tmp].ad_charge[0].showtimes_limit - ad_prob.show[tmp].showtimes)*show_weight);
     ad.push(tmp_ad);
+    console.log((ad_prob.show[tmp].ad_charge[0].showtimes_limit - ad_prob.show[tmp].showtimes));
     console.log("tmp_ad.show###"+tmp_ad.prob);
   };
 
