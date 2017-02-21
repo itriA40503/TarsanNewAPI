@@ -62,13 +62,6 @@ exports.getRegex = function(Urldomain){
             as: "pattern2js",
             attributes: ['available_js_id'],
             pattern_id: Sequelize.col('webPattern.pattern_id'),
-            // include:[
-            //   {
-            //     model: available_js,
-            //     as: "available_js",
-            //     available_js_id: {$col: 'available_js_id'}//Sequelize.col('pattern2js.available_js_id')
-            //   }
-            // ]
           }
         ]
 			})
@@ -97,14 +90,14 @@ exports.getKeyword = function(domain, url){
   let keyword;
   if(domain != null){
     let regexResult = url.match(domain.regex);
-    // console.log(regexResult);
+    console.log(regexResult);
     if(regexResult!=null){
       let kw = regexResult[1].replace(/\+/g, " ");
-      // console.log("keyword:"+keyword);
+      console.log("getKeyword##keyword:"+keyword);
       keyword = kw;
     }         
   }else{
-    // console.log("is NULL!!");
+    console.log("getKeyword##is NULL!!");
     keyword = null;
   }        
   return keyword
@@ -117,25 +110,12 @@ exports.getAdSort = function(ad){
   ad_prob.show = [];
   for (let i in ad) {
     // console.log(ad[i].ad_show[0].show_type);
-    let tmp_ad = {};
+    // let tmp_ad = {};
     if((ad[i].ad_charge[0].showtimes_limit === 0) && (ad[i].ad_charge[0].clicktimes_limit === 0)){            
-      // tmp_ad.ad_id = ad[i].ad_id;
-      // tmp_ad.show_type = ad[i].ad_show[0].show_type;
-      // ad_prob.no_limit.push(tmp_ad);
       ad_prob.no_limit.push(ad[i]);            
     }else if(ad[i].ad_charge[0].showtimes_limit != 0){
-      // tmp_ad.ad_id = ad[i].ad_id;
-      // tmp_ad.show_type = ad[i].ad_show[0].show_type;
-      // tmp_ad.number = ad[i].showtimes;
-      // tmp_ad.limit = ad[i].ad_charge[0].showtimes_limit;
-      // ad_prob.show.push(tmp_ad);
       ad_prob.show.push(ad[i]);
     }else if(ad[i].ad_charge[0].clicktimes_limit != 0){
-      // tmp_ad.ad_id = ad[i].ad_id;
-      // tmp_ad.show_type = ad[i].ad_show[0].show_type;
-      // tmp_ad.number = ad[i].clicktimes;
-      // tmp_ad.limit = ad[i].ad_charge[0].clicktimes_limit;
-      // ad_prob.click.push(tmp_ad);
       ad_prob.click.push(ad[i]);
     }
   }  
@@ -154,11 +134,6 @@ exports.getAdBy_algorithm = function(ad_prob){
   
   let ad = [];
   for (let tmp in ad_prob.click) {
-    // let tmp_ad = {};
-    // tmp_ad.ad_id = ad_prob.click[tmp].ad_id;
-    // tmp_ad.show_type = ad_prob.click[tmp].show_type;
-    // tmp_ad.prob = Math.ceil((ad_prob.click[tmp].limit - ad_prob.click[tmp].number)*click_weight);
-    // ad.push(tmp_ad);
     let tmp_ad = ad_prob.click[tmp];
     tmp_ad.prob = Math.ceil(
       (ad_prob.click[tmp].ad_charge[0].clicktimes_limit - ad_prob.click[tmp].clicktimes)*click_weight);
@@ -166,16 +141,10 @@ exports.getAdBy_algorithm = function(ad_prob){
     console.log("tmp_ad.click###"+tmp_ad.prob);
   };
   for (let tmp in ad_prob.show) {
-    // let tmp_ad = {};
-    // tmp_ad.ad_id = ad_prob.show[tmp].ad_id; 
-    // tmp_ad.show_type = ad_prob.show[tmp].show_type;   
-    // tmp_ad.prob = Math.ceil((ad_prob.show[tmp].limit - ad_prob.show[tmp].number)*show_weight);
-    // ad.push(tmp_ad);
     let tmp_ad = ad_prob.show[tmp];
     tmp_ad.prob = Math.ceil(
       (ad_prob.show[tmp].ad_charge[0].showtimes_limit - ad_prob.show[tmp].showtimes)*show_weight);
-    ad.push(tmp_ad);
-    console.log((ad_prob.show[tmp].ad_charge[0].showtimes_limit - ad_prob.show[tmp].showtimes));
+    ad.push(tmp_ad);    
     console.log("tmp_ad.show###"+tmp_ad.prob);
   };
 
@@ -186,11 +155,6 @@ exports.getAdBy_algorithm = function(ad_prob){
     }      
     let avg_weight = Math.ceil((sum_weight/ad.length)*noLimit_weight);
     for (let tmp in ad_prob.no_limit) {
-      // let tmp_ad = {};
-      // tmp_ad.ad_id = ad_prob.no_limit[tmp].ad_id;
-      // tmp_ad.show_type = ad_prob.no_limit[tmp].show_type; 
-      // tmp_ad.prob = avg_weight;
-      // ad.push(tmp_ad);
       let tmp_ad = ad_prob.no_limit[tmp];
       tmp_ad.prob = avg_weight;
       ad.push(tmp_ad);
@@ -199,11 +163,6 @@ exports.getAdBy_algorithm = function(ad_prob){
     };
   }else if(ad_prob.no_limit.length != 0 && ad.length == 0){
     for (let tmp in ad_prob.no_limit) {
-      // let tmp_ad = {};
-      // tmp_ad.ad_id = ad_prob.no_limit[tmp].ad_id;
-      // tmp_ad.show_type = ad_prob.no_limit[tmp].show_type;
-      // tmp_ad.prob = 1;
-      // ad.push(tmp_ad);
       let tmp_ad = ad_prob.no_limit[tmp];
       tmp_ad.prob = 1;
       ad.push(tmp_ad);
