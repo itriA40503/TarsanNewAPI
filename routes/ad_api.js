@@ -256,6 +256,7 @@ router.post('/run',function(req,res){
         // res.send(avail_js);
         console.log("avail_js:"+avail_js);
         console.log("ad.ad_show[0].show_type:"+ad.ad_show[0].show_type);
+        //# get js of ad.
         patternUtil.getAd_Js(avail_js,ad.ad_show[0].show_type).then(function(re){
           console.log("getAd_Js:"+re);
           if(re != null){
@@ -325,6 +326,7 @@ router.post('/log',function(req,res){
         ad_id : info.ad_id
       }
     }).then(function(re){
+      console.log("ad_log_kw:"+decodeURIComponent(info.keyword));
       if(re[0] !=0){
         ad_log.create({
           ad_id           : info.ad_id,
@@ -351,7 +353,7 @@ router.post('/log',function(req,res){
 });
 
 /**
- * @api {get} /Ad/log/:id/:hashkey Logging clicked ad
+ * @api {get} /Ad/log/:ad_id/:hashkey Logging clicked ad
  * @apiVersion 0.1.0
  * @apiName log click
  * @apiGroup Ad
@@ -428,7 +430,7 @@ router.get('/',function(req,res){
   if((req.accepts('*/*')== false)&&(req.accepts('Application/json')!=false)){  
     res.json({info});
   }else{
-    res.send('<img src="http://tarsanad.ddns.net:3000/images/calmingcatsmall.gif">');
+    res.send('<img src="http://tarsanad.ddns.net:9527/images/calmingcatsmall.gif">');
   }
 });
 
