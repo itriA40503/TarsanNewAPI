@@ -12,7 +12,7 @@ var runad = require('./routes/runad');
 var testing = require('./routes/testing');
 var machine = require('./routes/machine_api');
 var webLog = require('./routes/webLog_api');
-var ad = require('./routes/ad');
+var ad = require('./routes/ad_api');
 var app = express();
 
 // view engine setup
@@ -57,7 +57,7 @@ app.use(function(err, req, res, next) {
    title: err.status,
    status: res.locals.error,
    msg:err.message  
-  });    
+  });
 });
 
 module.exports = app;
