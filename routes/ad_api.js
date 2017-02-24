@@ -72,7 +72,10 @@ router.post('/run',function(req,res){
   // info.url = "http://mweb.gomaji.com/search.php?keyword=%E9%A4%85&ch=7&city=Taipei&page=3";
   // info.url = "http://mweb.gomaji.com/search.php?keyword=itri&ch=7&city=Taipei&page=3";
   // info.domain = "mweb.gomaji.com";
-  // ######  
+  // ###### 
+  
+  // console.dir(req.body);
+
   info.url = req.body.url;  
   info.domain = req.body.domain;
   info.ip = req.body.ip;
@@ -258,19 +261,24 @@ router.post('/run',function(req,res){
         console.log("ad.ad_show[0].show_type:"+ad.ad_show[0].show_type);
         //# get js of ad.
         patternUtil.getAd_Js(avail_js,ad.ad_show[0].show_type).then(function(re){
+          
+          let runAd = {}; //# The return object
+          runAd.keyword = decodeURIComponent(kw);
+          runAd.ad_id = ad.ad_id;          
+
           console.log("getAd_Js:"+re);
-          if(re != null){
-            let runAd = {};
-            runAd.keyword = decodeURIComponent(kw);
-            runAd.ad_id = ad.ad_id;
-            // runAd.url_href = ad.url_href;
+          if(re != null){            
             runAd.url = ad.url;
             runAd.js_content = re.js_content;
             console.log(runAd);
             //# the api return
             res.send(runAd);
           }else{
-            res.send("Didn't have suitable AD script to show!");
+            runAd.url = "";
+            runAd.js_content = ad.content;
+            console.log("runAd###:"+ad.content)
+            res.send(runAd);
+            // res.send("Didn't have suitable AD script to show!");
           }
           
         })
@@ -326,8 +334,9 @@ router.post('/log',function(req,res){
         ad_id : info.ad_id
       }
     }).then(function(re){
-      console.log("ad_log_kw:"+decodeURIComponent(info.keyword));
+      console.log("ad_log_kw:"+info.keyword)
       if(re[0] !=0){
+        //# create ad_log (show)
         ad_log.create({
           ad_id           : info.ad_id,
           keyword         : info.keyword,
@@ -341,6 +350,38 @@ router.post('/log',function(req,res){
           machine_name    : info.machine,
           create_datetime : info.datetime
         });
+        //# close ad check (show)
+        ad.findOne(          
+          {
+            where:{
+              ad_id : info.ad_id,
+              is_closed : false
+            },
+            include:{
+              model: ad_charge,
+              as: "ad_charge",
+              ad_id : Sequelize.col('ad.ad_id'),
+              where:{
+                showtimes_limit: {
+                  $eq: Sequelize.col('ad.showtimes')
+                }        
+              }       
+            }            
+          }
+        ).then(function(re){
+          if(re!= null){
+            //# closing ad
+            ad.update({
+                is_closed : true
+            },{
+              where:{
+                ad_id : re.ad_id
+              }
+            })
+            console.log("######close Ad : "+re.ad_id);          
+          }
+        })
+
         res.send(hashkey);
       }else{
         res.send("ad_id Not exists");
@@ -387,6 +428,7 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
     console.log("matchHashkey.length:"+matchHashkey.length);
     if(matchHashkey !=null && matchHashkey.length === 1){
       if(info != null){
+        //# create ad_log(click)
         ad_log.create({
           ad_id           : info.ad_id,
           keyword         : info.keyword,
@@ -400,6 +442,7 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
           machine_name    : info.machine,
           create_datetime : moment().format('YYYY-MM-DD hh:mm:ss a')
         });
+        //# updating ad clicktimes
         ad.update({
           clicktimes : ad.sequelize.literal('clicktimes+1')
         },
@@ -407,14 +450,49 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
           where:{
               ad_id : req.params.ad_id
           }
+        }).then(function(result){
+          //# close ad check (click)
+          console.log("Check Ad:"+info.ad_id)
+          ad.findOne(          
+            {
+              where:{
+                ad_id : info.ad_id
+              },
+              include:{
+                model: ad_charge,
+                as: "ad_charge",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  clicktimes_limit: {
+                    $eq: Sequelize.col('ad.clicktimes')
+                  }        
+                }       
+              }            
+            }
+          ).then(function(re){            
+            if(re!= null){
+              //# closing ad
+              ad.update({
+                  is_closed : true
+              },{
+                where:{
+                  ad_id : re.ad_id
+                }
+              })
+              console.log("######close Ad : "+re.ad_id);          
+            }          
+          })
         })
+        //# redirect page
         res.redirect(findAdHref.url_href);
       }else{
         console.log("Hashkey error");
+        //# redirect page
         res.redirect(findAdHref.url_href);
       }
     }else{
       console.log("Already have been log");
+      //# redirect page
       res.redirect(findAdHref.url_href);
     }
   });    
