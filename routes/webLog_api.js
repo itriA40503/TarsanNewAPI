@@ -63,20 +63,26 @@ router.post('/',function(req,res){
 					// console.log("is NULL!!");
 					info.keyword = null;
 				}
-
-				webLog.create({
-					keyword 		: info.keyword,
-					ip 				: info.ip,
-					url 			: info.url,
-					domain			: info.domain,
-					referer			: info.referer,
-					show_ad			: info.show_ad,
-					machine			: info.machine,
-					create_datetime	: moment().format('YYYY-MM-DD hh:mm:ss a')
-				});
-				console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
-				console.log(info);
-				res.json({CreateDateTime:moment().format('YYYY-MM-DD hh:mm:ss a')});				
+				if(info.ip!=null && info.ip != "undefined" ){
+					webLog.create({
+						keyword 		: info.keyword,
+						ip 				: info.ip,
+						url 			: info.url,
+						domain			: info.domain,
+						referer			: info.referer,
+						show_ad			: info.show_ad,
+						machine			: info.machine,
+						create_datetime	: moment().format('YYYY-MM-DD hh:mm:ss a')
+					});
+					console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
+					console.log(info);
+					res.json({CreateDateTime:moment().format('YYYY-MM-DD hh:mm:ss a')});
+				}else{
+					console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
+					console.log(info);
+					res.json({CreateDateTime:moment().format('YYYY-MM-DD hh:mm:ss a')});
+				}
+				
 			});
   
   // res.send('<img src="http://tarsanad.ddns.net:3000/images/calmingcatsmall.gif">');  	
