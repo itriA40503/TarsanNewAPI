@@ -55,7 +55,9 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   // res.render('error');
-  res.render('star',{  
+  let n = Math.floor(Math.random() * 2);
+  let errorPage = ['star', 'great'];
+  res.render(errorPage[n],{  
    title: err.status,
    status: res.locals.error,
    msg:err.message  
