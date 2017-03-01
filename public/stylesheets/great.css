@@ -1,0 +1,74 @@
+@font-face {
+	font-family: 'Akzidenz-Grotesk BQ';
+	src: url('https://dl.dropboxusercontent.com/u/39607016/fonts/Akzidenz-Grotesk%20BQ%20Bold%20Extended/AkzidenzGroteskBQ-BoldExt.eot');
+	src: url('https://dl.dropboxusercontent.com/u/39607016/fonts/Akzidenz-Grotesk%20BQ%20Bold%20Extended/AkzidenzGroteskBQ-BoldExt.eot?#iefix') format('embedded-opentype'),
+		url('https://dl.dropboxusercontent.com/u/39607016/fonts/Akzidenz-Grotesk%20BQ%20Bold%20Extended/AkzidenzGroteskBQ-BoldExt.woff') format('woff'),
+		url('https://dl.dropboxusercontent.com/u/39607016/fonts/Akzidenz-Grotesk%20BQ%20Bold%20Extended/AkzidenzGroteskBQ-BoldExt.ttf') format('truetype'),
+		url('https://dl.dropboxusercontent.com/u/39607016/fonts/Akzidenz-Grotesk%20BQ%20Bold%20Extended/AkzidenzGroteskBQ-BoldExt.svg#AkzidenzGroteskBQ-BoldExt') format('svg');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+    font-family: 'MetaProBold';
+    src: url('https://dl.dropboxusercontent.com/u/39607016/fonts/ff_meta_pro/MetaProBold.eot');
+    src: url('https://dl.dropboxusercontent.com/u/39607016/fonts/ff_meta_pro/MetaProBold.eot') format('embedded-opentype'),
+         url('https://dl.dropboxusercontent.com/u/39607016/fonts/ff_meta_pro/MetaProBold.woff2') format('woff2'),
+         url('https://dl.dropboxusercontent.com/u/39607016/fonts/ff_meta_pro/MetaProBold.woff') format('woff'),
+         url('https://dl.dropboxusercontent.com/u/39607016/fonts/ff_meta_pro/MetaProBold.ttf') format('truetype'),
+         url('https://dl.dropboxusercontent.com/u/39607016/fonts/ff_meta_pro/MetaProBold.svg#MetaProBold') format('svg');
+}
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+body {
+  background: #283681;
+  color: white;
+}
+section {
+  border: 0.58275vw solid #8a171c;
+  text-align: center;
+  margin: 1.74825vw;
+  padding: 2.40%;
+}
+.stars {
+  color: #8a171c;
+  display: flex;
+  justify-content: space-around;
+  font-size: 2.33vw;
+  max-width: 21vw;
+  background: #283681;
+  padding: 0 0.667em;
+  margin: 0 auto;
+  margin-top: -1.7em;
+}
+h1 {
+  font-family: 'Akzidenz-Grotesk BQ';
+  font-size: 15vw;
+  letter-spacing: 0.1em;
+  line-height: 0.1;
+  text-align: center;
+}
+h3 {
+  font-family: 'Akzidenz-Grotesk BQ';
+  font-size: 10vw;
+  letter-spacing: 0.1em;
+  line-height: 0.1;
+  text-align: center;
+}
+h2 {
+  font-family: 'MetaProBold';
+  font-size: 5.25vw;
+  margin-top: 2.0%;
+  letter-spacing: 0.1em;
+/*   text-align: right; */
+  margin-bottom: 2.0%;
+}
+.stars:last-of-type {
+  margin-top: 0em;
+  margin-bottom: -1.53em;
+  
+}
