@@ -325,8 +325,12 @@ router.post('/log',function(req,res){
   info.datetime = moment().format('YYYY-MM-DD hh:mm:ss a');
 
   let hashkey = patternUtil.AdEncrypt(info);
-
-  if(req.body.ad_id!=null){
+  
+  //# associations
+  ad_charge.belongsTo(ad, {foreignKey: 'ad_id'});
+  ad.hasMany(ad_charge, {as: 'ad_charge',foreignKey: 'ad_id'});
+  
+  if(req.body.ad_id!=null || req.body.ad_id != "undefined"){
     ad.update({
         showtimes : ad.sequelize.literal('showtimes+1')
     },{
