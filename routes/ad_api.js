@@ -388,12 +388,12 @@ router.post('/log',function(req,res){
 
         res.send(hashkey);
       }else{
-        res.send("ad_id Not exists");
+        res.send("ad_id Not exists.");
       }
     });
     
   }else{
-    res.send("null");
+    res.send("No data.");
   }    
 });
 
