@@ -91,8 +91,18 @@ exports.getKeyword = function(domain, url){
   if(domain != null){
     let regexResult = url.match(domain.regex);
     console.log(regexResult);
+    let i = 1;
+    if(Array.isArray(regexResult)){
+      for (i; i < regexResult.length; i++) {
+        console.log(i+":"+regexResult[i]);
+        if( regexResult[i] != null && regexResult[i] != "undefined"){
+          break;
+        }
+      };
+    }
+    
     if(regexResult!=null){
-      let kw = regexResult[1].replace(/\+/g, " ");
+      let kw = regexResult[i].replace(/\+/g, " ");
       console.log("getKeyword##keyword:"+keyword);
       keyword = kw;
     }         
