@@ -50,19 +50,8 @@ router.post('/',function(req,res){
   patternUtil.getRegex(info.domain)
 			.then(function(re){
 				// console.log("domain: "+re.domain+" regex: "+re.regex);
-				let weburl = info.url;
-				if(re != null){
-					let regexResult = weburl.match(re.regex);
-					// console.log(regexResult);
-					if(regexResult!=null){
-						let keyword = regexResult[1].replace(/\+/g, " ");
-						// console.log("keyword:"+keyword);
-						info.keyword = keyword;
-					}					
-				}else{
-					// console.log("is NULL!!");
-					info.keyword = null;
-				}
+				info.keyword = patternUtil.getKeyword(re, info.url);
+
 				if(info.ip!=null && info.ip != "undefined" ){
 					webLog.create({
 						keyword 		: info.keyword,
