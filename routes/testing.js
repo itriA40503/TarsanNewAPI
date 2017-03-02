@@ -4,6 +4,7 @@ var moment = require('moment');
 var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
+var patternUtil = require('./patternUtil');
 
 //#Connect database
 var database = new Sequelize('ad_platform', 'postgres', '123456',{
@@ -36,6 +37,19 @@ var log= function(inst){
 	console.dir(inst.get());
 }
 
+router.post('/kwTesing',function(req,res){
+  let domain = req.body.domain;  
+  let url = req.body.url;
+  console.log(domain+" - "+url);
+  // let domain = "m.ebay.com";
+  // let url = "http://m.ebay.com/sch/i.html?_nkw=blink182&isNewKw=1&isRefine=true&mfs=GOCLK&acimp=0&_trksid=p2056088.m2428.l1313.TR0.TRC0.Xg&sqp=g"
+  // let url = "http://m.ebay.com/sch/i.html?_nkw=sum41";
+  patternUtil.getRegex(domain).then(function(pattern){
+    let kw = patternUtil.getKeyword(pattern, url);
+    console.log(kw);
+    res.send("<b>"+kw+"</b>");
+  });
+});
 
 router.get('/:kw',function(req,res){
   let info = {};
