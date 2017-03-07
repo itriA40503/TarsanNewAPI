@@ -67,21 +67,50 @@ exports.getRegex = function(Urldomain){
 			})
 };
 
+exports.getAd_JsShowType = function(avail_js_id){
+  if(avail_js_id != null){
+    return available_js
+      .findAll({        
+        where:{
+          available_js_id : avail_js_id
+        },
+        attributes:['type']
+      }
+      ).then(function(resultTypes){
+        let reAry = [];
+        for (let i = 0; i < resultTypes.length; i++) {
+          reAry.push(resultTypes[i].type)
+        };
+        return reAry;
+      })
+  }
+};
+
 exports.getAd_Js = function(id, type){
-  if(type != null){
+  
+  let jsId;
+
+  if(type != null && type != ""){
+    jsId = id;
     return available_js
       .findOne({
         where: {$and:
           [
-            {available_js_id: id},
+            {available_js_id: jsId},
             {type: type}
           ]
         }      
       });
   }else{
+
+    if(Array.isArray(id)){
+      let index = Math.floor(Math.random() * id.length);
+      jsId = id[index]; 
+    }
+
     return available_js
       .findOne({
-        where: {available_js_id: id} 
+        where: {available_js_id: jsId} 
       });
   }  
 };
@@ -102,9 +131,10 @@ exports.getKeyword = function(domain, url){
     }
     
     if(regexResult!=null){
-      let kw = regexResult[i].replace(/\+/g, " ");
+      let kw = regexResult[i].replace(/\+/g, " ");      
+      keyword = decodeURI(kw);
+
       console.log("getKeyword##keyword:"+keyword);
-      keyword = kw;
     }         
   }else{
     console.log("getKeyword##is NULL!!");
