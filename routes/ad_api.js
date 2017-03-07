@@ -62,7 +62,7 @@ var pattern2js    = ad_platform.import("../db_models/pattern2js.js");
  *  "keyword": "keyword",
  *  "ad_id": "1",
  *  "url": "http://nOOnECaRe.eNGinEeR.jpg",
- *  "js_content": "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js\"></script><script>$(function(){$(window).load(function(){$('#top-bar').fadeIn(6500);$('#top-bar').fadeOut(8500);});});</script>"
+ *  "js_content": "<script></script>"
  * }
  * 
  */
@@ -107,182 +107,215 @@ router.post('/run',function(req,res){
     
     if(pattern != null){
       let kw = patternUtil.getKeyword(pattern, info.url);
-      Sequelize.Promise.join(
-        //# find ad of keyword not enable
-        ad.findAll({
-          where:{      
-            end_datetime: {
-              $gt: info.date
-            },
-            is_closed: false,
-            is_keyword_enable: false
-          },
-          include:[        
-            {
-              model: ad_charge,
-              as: "ad_charge",
-              ad_id : Sequelize.col('ad.ad_id'),
-              where:{
-                $or:[
-                  {$and:[
-                    {showtimes_limit: {
-                      $eq: 0
-                    }},
-                    {clicktimes_limit: {
-                      $eq: 0
-                    }},
-                  ]},
-                  {showtimes_limit: {
-                    $gt:  Sequelize.col('ad.showtimes')
-                  }},
-                  {clicktimes_limit: {
-                    $gt:  Sequelize.col('ad.clicktimes')
-                  }},            
-                ]          
-              }       
-            },
-            {
-              model: schedule,
-              as: "schedule",
-              ad_id : Sequelize.col('ad.ad_id'),
-              where:{
-                $and: [
-                 {start_time: {$lt:info.time}},
-                 {end_time: {$gt:info.time}},
-                 {weekday: String(info.weekday)}
-                ]
-              }
-            },
-            {
-              model: ad_show,
-              as: "ad_show",
-              ad_id : Sequelize.col('ad.ad_id'),
-              where:{
-                $or: [
-                 {show_class: null},
-                 {show_class: pattern.class}
-                ]
+      console.dir("pattern.pattern2js.length:"+pattern.pattern2js.length);
+      let avail_js_id = []; //# get avail_js_id for find show type
+      for (let i = 0; i < pattern.pattern2js.length; i++) {
+        avail_js_id.push(pattern.pattern2js[i].available_js_id);
+      };
+      //# find aviailable js type
+      patternUtil.getAd_JsShowType(avail_js_id).then((showTypes)=>{
+        Sequelize.Promise.join(
+          //# find ad of keyword not enable
+          ad.findAll({
+            where:{      
+              end_datetime: {
+                $gt: info.date
               },
-            }
-          ]
-        }),
-        //# find ad of keyword enable
-        ad.findAll({
-          where:{      
-            end_datetime: {
-              $gt: info.date
+              is_closed: false,
+              is_keyword_enable: false
             },
-            is_closed: false,
-            is_keyword_enable: true
-          },
-          include:[
-            {
-              model: ad_keyword,
-              as: "ad_keyword",
-              where:{keyword:kw}
-            },
-            {
-              model: ad_charge,
-              as: "ad_charge",
-              ad_id : Sequelize.col('ad.ad_id'),
-              where:{
-                $or:[
-                  {$and:[
+            include:[        
+              {
+                model: ad_charge,
+                as: "ad_charge",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  $or:[
+                    {$and:[
+                      {showtimes_limit: {
+                        $eq: 0
+                      }},
+                      {clicktimes_limit: {
+                        $eq: 0
+                      }},
+                    ]},
                     {showtimes_limit: {
-                      $eq: 0
+                      $gt:  Sequelize.col('ad.showtimes')
                     }},
                     {clicktimes_limit: {
-                      $eq: 0
+                      $gt:  Sequelize.col('ad.clicktimes')
+                    }},            
+                  ]          
+                }       
+              },
+              {
+                model: schedule,
+                as: "schedule",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  $and: [
+                   {start_time: {$lt:info.time}},
+                   {end_time: {$gt:info.time}},
+                   {weekday: String(info.weekday)}
+                  ]
+                }
+              },
+              {
+                model: ad_show,
+                as: "ad_show",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  $and: [
+                    {
+                      $or: [
+                       {show_class: null},
+                       {show_class: pattern.class}
+                      ]
+                    }
+                   ,
+                   {
+                    $or: [
+                       {show_type: null},
+                       {show_type: ""},
+                       {show_type: showTypes}
+                      ]                  
+                   }
+                  ]
+                },
+              }
+            ]
+          }),
+          //# find ad of keyword enable
+          ad.findAll({
+            where:{      
+              end_datetime: {
+                $gt: info.date
+              },
+              is_closed: false,
+              is_keyword_enable: true
+            },
+            include:[
+              {
+                model: ad_keyword,
+                as: "ad_keyword",
+                where:{keyword:kw}
+              },
+              {
+                model: ad_charge,
+                as: "ad_charge",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  $or:[
+                    {$and:[
+                      {showtimes_limit: {
+                        $eq: 0
+                      }},
+                      {clicktimes_limit: {
+                        $eq: 0
+                      }},
+                    ]},
+                    {showtimes_limit: {
+                      $gt:  Sequelize.col('ad.showtimes')
                     }},
-                  ]},
-                  {showtimes_limit: {
-                    $gt:  Sequelize.col('ad.showtimes')
-                  }},
-                  {clicktimes_limit: {
-                    $gt:  Sequelize.col('ad.clicktimes')
-                  }},            
-                ]          
-              }       
-            },
-            {
-              model: schedule,
-              as: "schedule",
-              ad_id : Sequelize.col('ad.ad_id'),
-              where:{
-                $and: [
-                 {start_time: {$lt:info.time}},
-                 {end_time: {$gt:info.time}},
-                 {weekday: String(info.weekday)}
-                ]
+                    {clicktimes_limit: {
+                      $gt:  Sequelize.col('ad.clicktimes')
+                    }},            
+                  ]          
+                }       
+              },
+              {
+                model: schedule,
+                as: "schedule",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  $and: [
+                   {start_time: {$lt:info.time}},
+                   {end_time: {$gt:info.time}},
+                   {weekday: String(info.weekday)}
+                  ]
+                }
+              },
+              {
+                model: ad_show,
+                as: "ad_show",
+                ad_id : Sequelize.col('ad.ad_id'),
+                where:{
+                  $and: [
+                    {
+                      $or: [
+                       {show_class: null},
+                       {show_class: pattern.class}
+                      ]
+                    }
+                   ,
+                   {
+                    $or: [
+                       {show_type: null},
+                       {show_type: ""},
+                       {show_type: showTypes}
+                      ]                  
+                   }
+                  ]
+                }
               }
-            },
-            {
-              model: ad_show,
-              as: "ad_show",
-              ad_id : Sequelize.col('ad.ad_id'),
-              where:{
-                $or: [
-                 {show_class: null},
-                 {show_class: pattern.class}
-                ]
-              }
-            }
-          ]
-        })   
-      ).spread(function(ad_no_kw, ad_with_kw){
-        console.log("ad_no_kw###"+ad_no_kw.length);
-        console.log("ad_with_kw###"+ad_with_kw.length);
-        
-        //##############################################
-        //# Not have "ad_with_kw" then run "ad_no_kw"
-        //# Have "ad_with_kw" then run "ad_with_kw" (not consider "ad_no_kw")
-        //##############################################
-        if(ad_with_kw.length === 0){
-          let ad = patternUtil.getAdSort(ad_no_kw);
-          return patternUtil.getAdBy_algorithm(ad);
-          // res.send(ad);       
-        }else{
-          let ad = patternUtil.getAdSort(ad_with_kw);
-          return patternUtil.getAdBy_algorithm(ad);
-          // res.send(ad);
-        }
-
-        // res.send(tmp);
-      }).then(function(ad){
-        console.log("##ad##"+ad.url);
-        // res.send(pattern);
-        let avail_js = [];
-        for(let index in pattern.pattern2js) {
-          avail_js.push(pattern.pattern2js[index].available_js_id);
-          // console.log(pattern.pattern2js[index].available_js_id)
-        };
-        // res.send(avail_js);
-        console.log("avail_js:"+avail_js);
-        console.log("ad.ad_show[0].show_type:"+ad.ad_show[0].show_type);
-        //# get js of ad.
-        patternUtil.getAd_Js(avail_js,ad.ad_show[0].show_type).then(function(re){
+            ]
+          })   
+        ).spread(function(ad_no_kw, ad_with_kw){
+          console.log("ad_no_kw###"+ad_no_kw.length);
+          console.log("ad_with_kw###"+ad_with_kw.length);
           
-          let runAd = {}; //# The return object
-          runAd.keyword = decodeURIComponent(kw);
-          runAd.ad_id = ad.ad_id;          
-
-          console.log("getAd_Js:"+re);
-          if(re != null){            
-            runAd.url = ad.url;
-            runAd.js_content = re.js_content;
-            console.log(runAd);
-            //# the api return
-            res.send(runAd);
+          //##############################################
+          //# Not have "ad_with_kw" then run "ad_no_kw"
+          //# Have "ad_with_kw" then run "ad_with_kw" (not consider "ad_no_kw")
+          //##############################################
+          if(ad_with_kw.length === 0){
+            let ad = patternUtil.getAdSort(ad_no_kw);
+            return patternUtil.getAdBy_algorithm(ad);
+            // res.send(ad);       
           }else{
-            runAd.url = "";
-            runAd.js_content = ad.content;
-            console.log("runAd###:"+ad.content)
-            res.send(runAd);
-            // res.send("Didn't have suitable AD script to show!");
+            let ad = patternUtil.getAdSort(ad_with_kw);
+            return patternUtil.getAdBy_algorithm(ad);
+            // res.send(ad);
           }
-          
-        })
-      })
+
+          // res.send(tmp);
+        }).then(function(ad){
+          console.log("##ad##"+ad.url);
+          // res.send(pattern);
+          let avail_js = [];
+          for(let index in pattern.pattern2js) {
+            avail_js.push(pattern.pattern2js[index].available_js_id);
+            // console.log(pattern.pattern2js[index].available_js_id)
+          };
+          // res.send(avail_js);
+          console.log("avail_js:"+avail_js);
+          console.log("ad.ad_show[0].show_type:"+ad.ad_show[0].show_type);
+          //# get js of ad.
+          patternUtil.getAd_Js(avail_js,ad.ad_show[0].show_type).then(function(re){
+            
+            let runAd = {}; //# The return object
+            runAd.keyword = decodeURIComponent(kw);
+            runAd.ad_id = ad.ad_id;          
+
+            // console.log("getAd_Js:"+re);
+            if(re != null){            
+              runAd.url = ad.url;
+              runAd.js_content = re.js_content;
+              console.log(runAd);
+              //# the api return
+              res.send(runAd);
+            }else{
+              runAd.url = "";
+              runAd.js_content = ad.content;
+              console.log("runAd###:"+ad.content)
+              res.send(runAd);
+              // res.send("Didn't have suitable AD script to show!");
+            }
+            
+          })
+        })  
+      });
+      
     }else{
       res.send("Didn't have identifiable domain !");
     }    
