@@ -6,7 +6,8 @@ var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
 var patternUtil = require('./patternUtil');
-
+//# serverlog setting
+var console = process.console;
 
 //#Define model
 var ad            = ad_platform.import("../db_models/ad.js");
@@ -85,7 +86,7 @@ router.post('/run',function(req,res){
   info.date = moment().format('YYYY-MM-DD');
   info.time = moment().format('HH:mm:ss'); //# 24 hour time
   // console.log(info.weekday+" | "+info.date+" | "+info.time);
-  console.log(info);
+  console.tag({msg : "runAd", colors : ['yellow']}, "input").time().file().log(info);
 
   //# associations
   schedule.belongsTo(ad, {foreignKey: 'ad_id'});
@@ -107,7 +108,7 @@ router.post('/run',function(req,res){
     
     if(pattern != null){
       let kw = patternUtil.getKeyword(pattern, info.url);
-      console.dir("pattern.pattern2js.length:"+pattern.pattern2js.length);
+      // console.dir("pattern.pattern2js.length:"+pattern.pattern2js.length);
       let avail_js_id = []; //# get avail_js_id for find show type
       for (let i = 0; i < pattern.pattern2js.length; i++) {
         avail_js_id.push(pattern.pattern2js[i].available_js_id);
@@ -261,8 +262,10 @@ router.post('/run',function(req,res){
             ]
           })   
         ).spread(function(ad_no_kw, ad_with_kw){
-          console.log("ad_no_kw###"+ad_no_kw.length);
-          console.log("ad_with_kw###"+ad_with_kw.length);
+          console.tag({msg : "runAd", colors : ['yellow']},"ad","ad_no_kw").time().file().log(ad_no_kw.length);
+          console.tag({msg : "runAd", colors : ['yellow']},"ad","ad_with_kw").time().file().log(ad_with_kw.length);
+          // console.log("ad_no_kw###"+ad_no_kw.length);
+          // console.log("ad_with_kw###"+ad_with_kw.length);
           
           //##############################################
           //# Not have "ad_with_kw" then run "ad_no_kw"
@@ -280,7 +283,7 @@ router.post('/run',function(req,res){
 
           // res.send(tmp);
         }).then(function(ad){
-          console.log("##ad##"+ad.url);
+          // console.log("##ad##"+ad.url);
           // res.send(pattern);
           let avail_js = [];
           for(let index in pattern.pattern2js) {
@@ -288,8 +291,10 @@ router.post('/run',function(req,res){
             // console.log(pattern.pattern2js[index].available_js_id)
           };
           // res.send(avail_js);
-          console.log("avail_js:"+avail_js);
-          console.log("ad.ad_show[0].show_type:"+ad.ad_show[0].show_type);
+          console.tag({msg : "runAd", colors : ['yellow']},"ad","avail_js").time().file().log(avail_js);
+          console.tag({msg : "runAd", colors : ['yellow']},"ad","show_type").time().file().log(ad.ad_show[0].show_type);
+          // console.log("avail_js:"+avail_js);
+          // console.log("ad.ad_show[0].show_type:"+ad.ad_show[0].show_type);
           //# get js of ad.
           patternUtil.getAd_Js(avail_js,ad.ad_show[0].show_type).then(function(re){
             
@@ -301,25 +306,37 @@ router.post('/run',function(req,res){
             if(re != null){            
               runAd.url = ad.url;
               runAd.js_content = re.js_content;
-              console.log(runAd);
+              // console.log(runAd);
+              console.tag({msg : "runAd", colors : ['yellow']},{msg : "output", colors : ['red']}).time().file().log(runAd);
               //# the api return
               res.send(runAd);
             }else{
               runAd.url = "";
               runAd.js_content = ad.content;
-              console.log("runAd###:"+ad.content)
+              // console.log("runAd###:"+ad.content)
+              console.tag({msg : "runAd", colors : ['yellow']},{msg : "output", colors : ['red']}).time().file().log(runAd);
               res.send(runAd);
               // res.send("Didn't have suitable AD script to show!");
             }
-            
-          })
-        })  
-      });
+          }).catch((err) => {
+            console.error(err);
+          });
+        }).catch((err) => {
+          console.error(err);
+        });  
+      }).catch((err) => {
+        console.error(err);
+      });;
       
     }else{
       res.send("Didn't have identifiable domain !");
-    }    
-  });
+      // console.tag("runAd","output").time().file().log("Didn't have identifiable domain !");
+      // console.info("runAd Didn't have identifiable domain !");
+    }
+    console.info("runAd");
+  }).catch((err) => {
+    console.error(err);
+  });;
 });
 
 /**
@@ -356,7 +373,7 @@ router.post('/log',function(req,res){
   info.keyword  = req.body.keyword;
   info.machine  = req.body.machine;
   info.datetime = moment().format('YYYY-MM-DD hh:mm:ss a');
-
+  console.tag({msg : "LogAd", colors : ['yellow']},{msg : "show", colors : ['yellow']},"input").time().file().log(info);
   let hashkey = patternUtil.AdEncrypt(info);
   
   //# associations
@@ -371,7 +388,8 @@ router.post('/log',function(req,res){
         ad_id : info.ad_id
       }
     }).then(function(re){
-      console.log("ad_log_kw:"+info.keyword)
+      // console.log("ad_log_kw:"+info.keyword)
+      // console.tag("LogAd","keyword").time().file().log(info);
       if(re[0] !=0){
         //# create ad_log (show)
         ad_log.create({
@@ -415,19 +433,24 @@ router.post('/log',function(req,res){
                 ad_id : re.ad_id
               }
             })
-            console.log("######close Ad : "+re.ad_id);          
+            console.tag({msg : "LogAd", colors : ['yellow']},{msg : "show", colors : ['yellow']},"close").time().file().log(re.ad_id);
+            // console.log("######close Ad : "+re.ad_id);          
           }
         })
-
+        console.tag({msg : "LogAd", colors : ['yellow']},{msg : "show", colors : ['yellow']},{msg : "output", colors : ['red']}).time().file().log(hashkey);
         res.send(hashkey);
       }else{
+        console.tag({msg : "LogAd", colors : ['yellow']},{msg : "show", colors : ['yellow']}).info("ad_id Not exists.");
         res.send("ad_id Not exists.");
       }
+    }).catch((err) => {
+      console.error(err);
     });
     
-  }else{
+  }else{    
     res.send("No data.");
-  }    
+  }
+  console.tag({msg : "LogAd", colors : ['yellow']},{msg : "show", colors : ['yellow']}).info("LogAd");    
 });
 
 /**
@@ -444,8 +467,10 @@ router.post('/log',function(req,res){
  *
  */
 router.get('/log/:ad_id/:hashkey',function(req,res){
+  console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},"input","ad_id").time().file().log(req.params.ad_id);
+  console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},"input","hashkey").time().file().log(req.params.hashkey);
   let info = patternUtil.AdDecrypt(req.params.hashkey);
-
+  
   Sequelize.Promise.join(
     //# check ad_log have same hash key
     ad_log.findAll({
@@ -460,9 +485,11 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
     })
   ).spread(function(matchHashkey, findAdHref){
     if(findAdHref == null){
+      console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']}).warning("ad_id ERROR");
       res.send("ad_id ERROR");
     }
-    console.log("matchHashkey.length:"+matchHashkey.length);
+    console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},"matchHashkey","length").time().file().log(matchHashkey.length);
+    // console.log("matchHashkey.length:"+matchHashkey.length);
     if(matchHashkey !=null && matchHashkey.length === 1){
       if(info != null){
         //# create ad_log(click)
@@ -478,6 +505,8 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
           hashkey         : req.params.hashkey,
           machine_name    : info.machine,
           create_datetime : moment().format('YYYY-MM-DD hh:mm:ss a')
+        }).catch((err) => {
+          console.error(err);
         });
         //# updating ad clicktimes
         ad.update({
@@ -489,7 +518,7 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
           }
         }).then(function(result){
           //# close ad check (click)
-          console.log("Check Ad:"+info.ad_id)
+          // console.log("Check Ad:"+info.ad_id)
           ad.findOne(          
             {
               where:{
@@ -516,23 +545,33 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
                   ad_id : re.ad_id
                 }
               })
-              console.log("######close Ad : "+re.ad_id);          
+              console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},"close").time().file().log(re.ad_id);
+              // console.log("######close Ad : "+re.ad_id);          
             }          
           })
-        })
+        }).catch((err) => {
+          console.error(err);
+        });
+        console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},{msg : "redirect", colors : ['red']}).time().file().log(findAdHref.url_href);
         //# redirect page
         res.redirect(findAdHref.url_href);
+        console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']}).info("LogAd - redirect");
       }else{
-        console.log("Hashkey error");
+        console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']}).warning("Hashkey error");
+        // console.log("Hashkey error");
+        console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},{msg : "redirect", colors : ['red']}).time().file().log(findAdHref.url_href);
         //# redirect page
         res.redirect(findAdHref.url_href);
       }
     }else{
-      console.log("Already have been log");
+      console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']}).info("Already have been log");
       //# redirect page
       res.redirect(findAdHref.url_href);
+      console.tag({msg : "LogAd", colors : ['yellow']},{msg : "click", colors : ['yellow']},{msg : "redirect", colors : ['red']}).time().file().log(findAdHref.url_href);
     }
-  });    
+  }).catch((err) => {
+    console.error(err);
+  });
 });
 
 
