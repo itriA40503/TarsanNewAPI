@@ -4,6 +4,8 @@ var moment = require('moment');
 var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
+//# serverlog setting
+var console = process.console;
 
 //#Define
 var machine = ad_platform.import("../db_models/machine.js");
@@ -70,7 +72,7 @@ router.get('/:mac',function(req,res){
       res.status(403).json(info);
     }else{
       info.mac_addr = info.mac_addr.replace(/:/g, "");;
-      console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
+      // console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
       //#########
       //# find last id
       machine
@@ -96,7 +98,8 @@ router.get('/:mac',function(req,res){
           info.machine_name = machine.name;
           if(created){
             info.message = "New Machine created!";
-            console.log(info);
+            console.tag({msg : "Machine", colors : ['yellow']}, {msg : "create", colors : ['red']}).time().file().log(info);
+            // console.log(info);
             res.json(info);
           }
             info.message = "Machine already have!";
@@ -111,19 +114,23 @@ router.get('/:mac',function(req,res){
               returning: true,
               plain: true              
             })
-            console.log(info);
+            console.tag({msg : "Machine", colors : ['yellow']}, "log").time().file().log(info);
+            // console.log(info);
             res.json(info);
-        })
+        }).catch((err) => {
+          console.error(err);
+        });
+      }).catch((err) => {
+        console.error(err);
       });
       
       
       //#########
     }    
   }else{
-    console.log("Not Application/json");
+    // console.log("Not Application/json");
     res.send('<img src="http://tarsanad.ddns.net:3000/images/calmingcatsmall.gif">');
-  }
-    
+  }    
 });
 
 
