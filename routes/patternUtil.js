@@ -2,7 +2,7 @@ var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
 var CryptoJS = require("crypto-js");
-
+var console = process.console;
 //#Define models
 var webPattern    = ad_platform.import("../db_models/web_pattern.js");
 var available_js  = ad_platform.import("../db_models/available_js.js");
@@ -27,7 +27,8 @@ exports.AdDecrypt = function(input){
   let bytes  = CryptoJS.AES.decrypt(input_, secertkey);
   try{
     let Decrypt_obj = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-    console.log("AdDecrypt:"+Decrypt_obj);
+    // console.log("AdDecrypt:"+Decrypt_obj);
+    console.tag({msg : "AdDecrypt", colors : ['yellow']}).time().file().log(Decrypt_obj);
     return Decrypt_obj;
   }catch(err){
     return null;
@@ -119,11 +120,11 @@ exports.getKeyword = function(domain, url){
   let keyword;
   if(domain != null){
     let regexResult = url.match(domain.regex);
-    console.log(regexResult);
+    // console.log(regexResult);
     let i = 1;
     if(Array.isArray(regexResult)){
       for (i; i < regexResult.length; i++) {
-        console.log(i+":"+regexResult[i]);
+        // console.log(i+":"+regexResult[i]);
         if( regexResult[i] != null && regexResult[i] != "undefined"){
           break;
         }
@@ -133,11 +134,12 @@ exports.getKeyword = function(domain, url){
     if(regexResult!=null){
       let kw = regexResult[i].replace(/\+/g, " ");      
       keyword = decodeURI(kw);
-
-      console.log("getKeyword##keyword:"+keyword);
+      console.tag({msg : "getKeyword", colors : ['yellow']}).time().file().log(keyword);
+      // console.log("getKeyword##keyword:"+keyword);
     }         
   }else{
-    console.log("getKeyword##is NULL!!");
+    console.tag({msg : "getKeyword", colors : ['yellow']}).time().file().log("Is NULL");
+    // console.log("getKeyword##is NULL!!");
     keyword = null;
   }        
   return keyword
@@ -178,14 +180,15 @@ exports.getAdBy_algorithm = function(ad_prob){
     tmp_ad.prob = Math.ceil(
       (ad_prob.click[tmp].ad_charge[0].clicktimes_limit - ad_prob.click[tmp].clicktimes)*click_weight);
     ad.push(tmp_ad);
-    console.log("tmp_ad.click###"+tmp_ad.prob);
+    // console.tag({msg : "getAdBy_algorithm", colors : ['yellow']},"ad","click").time().file().log(tmp_ad.prob);
+    // console.log("tmp_ad.click###"+tmp_ad.prob);
   };
   for (let tmp in ad_prob.show) {
     let tmp_ad = ad_prob.show[tmp];
     tmp_ad.prob = Math.ceil(
       (ad_prob.show[tmp].ad_charge[0].showtimes_limit - ad_prob.show[tmp].showtimes)*show_weight);
     ad.push(tmp_ad);    
-    console.log("tmp_ad.show###"+tmp_ad.prob);
+    // console.log("tmp_ad.show###"+tmp_ad.prob);
   };
 
   if(ad_prob.no_limit.length != 0 && ad.length != 0){
@@ -199,14 +202,14 @@ exports.getAdBy_algorithm = function(ad_prob){
       tmp_ad.prob = avg_weight;
       ad.push(tmp_ad);
       
-      console.log("tmp_ad.no_limit###"+tmp_ad.prob);
+      // console.log("tmp_ad.no_limit###"+tmp_ad.prob);
     };
   }else if(ad_prob.no_limit.length != 0 && ad.length == 0){
     for (let tmp in ad_prob.no_limit) {
       let tmp_ad = ad_prob.no_limit[tmp];
       tmp_ad.prob = 1;
       ad.push(tmp_ad);
-      console.log("tmp_ad.no_limit###"+tmp_ad.prob);
+      // console.log("tmp_ad.no_limit###"+tmp_ad.prob);
     };
   }
 
@@ -216,8 +219,10 @@ exports.getAdBy_algorithm = function(ad_prob){
     items.push(ad[tmp].ad_id);
     itemsWeight.push(ad[tmp].prob);
   }
-  console.log(items);
-  console.log(itemsWeight);
+  console.tag({msg : "getAdBy_algorithm", colors : ['yellow']},"ad","id").time().file().log(items);
+  console.tag({msg : "getAdBy_algorithm", colors : ['yellow']},"ad","weight").time().file().log(itemsWeight);
+  // console.log(items);
+  // console.log(itemsWeight);
   let result = weightedRandom(items, itemsWeight);
   for (let index in ad) {
     if(result === ad[index].ad_id){
@@ -229,7 +234,7 @@ exports.getAdBy_algorithm = function(ad_prob){
 
 function weightedRandom(items, itemsWeight){
   let totalWeight=eval(itemsWeight.join("+"));
-  console.log("totalWeight##"+totalWeight);
+  // console.log("totalWeight##"+totalWeight);
   let randomArray=[];
   let currentItem=0;
   for(let i=0; i<items.length; i++){
