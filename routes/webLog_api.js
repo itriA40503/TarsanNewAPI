@@ -4,7 +4,7 @@ var moment = require('moment');
 var Sequelize = require('sequelize'),
     http = require('http');
 var ad_platform = require('../database/ad_platform');
-
+var console = process.console;
 //#Define model
 var webLog = ad_platform.import("../db_models/web_log.js");
 
@@ -63,16 +63,18 @@ router.post('/',function(req,res){
 						machine			: info.machine,
 						create_datetime	: moment().format('YYYY-MM-DD hh:mm:ss a')
 					});
-					console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
-					console.log(info);
+					// console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
+					// console.log(info);
 					res.json({CreateDateTime:moment().format('YYYY-MM-DD hh:mm:ss a')});
 				}else{
-					console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
-					console.log(info);
+					// console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
+					// console.log(info);
 					res.json({CreateDateTime:moment().format('YYYY-MM-DD hh:mm:ss a')});
 				}
-				
-			});
+				console.tag({msg : "WebLog", colors : ['yellow']}, "log").time().file().log(info);
+			}).catch((err) => {
+              console.error(err);
+          	});
   
   // res.send('<img src="http://tarsanad.ddns.net:3000/images/calmingcatsmall.gif">');  	
 });
