@@ -6,6 +6,8 @@ var Sequelize = require('sequelize'),
 var ad_platform = require('../database/ad_platform');
 var patternUtil = require('./patternUtil');
 
+var console = process.console;
+
 //#Connect database
 var database = new Sequelize('ad_platform', 'postgres', '123456',{
         host:'52.193.77.171',
@@ -52,7 +54,10 @@ router.post('/kwTesing',function(req,res){
   patternUtil.getRegex(domain).then(function(pattern){
     let kw = patternUtil.getKeyword(pattern, url);
     console.log(kw);
+    console.tag("Demo").time().file().log("Hello world");
     res.send("<b>"+kw+"</b>");
+  }).catch((err) => {
+    console.log(err);
   });
 });
 
