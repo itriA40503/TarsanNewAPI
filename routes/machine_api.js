@@ -86,7 +86,7 @@ router.get('/:mac',function(req,res){
           { where:{mac_addr:info.mac_addr}, 
             defaults: {
               create_datetime: moment().format('YYYY-MM-DD hh:mm:ss a'), 
-              update_datetime:moment().format('YYYY-MM-DD hh:mm:ss a'),
+              update_datetime: moment().format('YYYY-MM-DD hh:mm:ss a'),
               name: 'tmp'+(parseInt(result.machine_id)+1)
             }
           }

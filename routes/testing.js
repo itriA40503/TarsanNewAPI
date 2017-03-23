@@ -10,13 +10,23 @@ var console = process.console;
 
 //#Connect database
 var database = new Sequelize('ad_platform', 'postgres', '123456',{
-        host:'52.193.77.171',
-        dialect: 'postgres',
+  host:'52.193.77.171',
+  dialect: 'postgres',
 	logging: false,
 	define:{
 		timestamps: false
 	}
 	});
+
+var database2 = new Sequelize('tarsan_test2', 'postgres', 'itria40503', {
+  host: '52.69.25.119',
+  dialect: 'postgres',
+  logging: false,
+  define: {
+    timestamps: false
+  }
+})
+
 var connect_status;
 //#Testing connect database
 database
@@ -350,8 +360,35 @@ router.get('/:kw',function(req,res){
     
 });
 
+router.get('/detect/device',function(req,res){
+  let MobileDetect = require('mobile-detect');
+  let md = new MobileDetect(req.headers['user-agent']);
+  console.log(req.headers['user-agent']);
+  // console.tag("mobile").log( md.mobile() );
+  // console.tag("phone").log( md.phone() );
+  // console.tag("tablet").log( md.tablet() );
+  console.tag("os").log( md.os() );
+  if(md.os() === "iOS"){    
+    res.redirect("http://appspx.itri.org.tw/ourapps/MySpendingBook/MySpendingBook_a.aspx");    
+  }else if(md.os() === "AndroidOS"){
+    res.redirect("https://play.google.com/apps/testing/tw.org.itri.ccma.msb");
+  }else{
+    res.send("No phone?");
+  }
+  
+});
+
 router.get('/',function(req,res){
   let info = {};
+  // var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in milliseconds
+  // var localISOTime = (new Date(Date.now() - tzoffset)).toISOString().slice(0,-1);
+  // console.log(tzoffset);
+  // console.log(localISOTime);
+  console.time().log("time");
+  // let nowTime = moment().format();
+  // console.log(zone.name);
+  // console.log(moment().format('YYYY-MM-DD hh:mm:ss a'));
+  // console.log(moment().tz("Asia/Taipei").format().toISOString());
 	console.log(req.headers.accept);
   console.log(req.accepts('*/*'));
   console.log(moment("2017-02-05").day());

@@ -336,7 +336,7 @@ router.post('/run',function(req,res){
     console.info("runAd");
   }).catch((err) => {
     console.error(err);
-  });;
+  });
 });
 
 /**
@@ -519,7 +519,7 @@ router.get('/log/:ad_id/:hashkey',function(req,res){
         }).then(function(result){
           //# close ad check (click)
           // console.log("Check Ad:"+info.ad_id)
-          ad.findOne(          
+          ad.findOne(        
             {
               where:{
                 ad_id : info.ad_id

@@ -13,7 +13,7 @@ var testing = require('./routes/testing');
 var machine = require('./routes/machine_api');
 var webLog = require('./routes/webLog_api');
 var ad = require('./routes/ad_api');
-
+var msb = require('./routes/msb_install');
 var app = express();
 
 var console = process.console; 
@@ -42,6 +42,7 @@ app.use('/', index);
 app.use('/users', users);
 app.use('/runad',runad);
 app.use('/testing',testing);
+app.use('/msb',msb);
 
 app.use('/machine',machine);
 app.use('/webLog',webLog);
