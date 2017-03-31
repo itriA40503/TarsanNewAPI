@@ -4,11 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var session = require('express-session')
 var scribe = require('scribe-js')();
+
 var index = require('./routes/index');
 var users = require('./routes/users');
 var runad = require('./routes/runad');
 var testing = require('./routes/testing');
+var webApi = require('./routes/web_api');
 
 var machine = require('./routes/machine_api');
 var webLog = require('./routes/webLog_api');
@@ -30,6 +33,13 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.use(session({
+  saveUninitialized: false,
+  resave: true,
+  secret: 'Fantastic!,Allons-y!,Geronimo!'
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 //# Serving static files from "public" folder
 app.use(express.static('public'));
@@ -43,10 +53,37 @@ app.use('/users', users);
 app.use('/runad',runad);
 app.use('/testing',testing);
 app.use('/msb',msb);
+app.use('/web',webApi);
 
 app.use('/machine',machine);
 app.use('/webLog',webLog);
 app.use('/ad',ad);
+
+// app.use(function(req, res, next) {
+//     // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8888');
+//     res.setHeader('Access-Control-Allow-Origin', 'http://tarsanad.ddns.net:3000');
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
+//     res.heasetHeaderder('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,  X-Total-Count');
+
+//     //intercepts OPTIONS method
+//     if ('OPTIONS' === req.method) {
+//       //respond with 200
+//       res.send(200);
+//     }
+//     else {
+//     //move on
+//       next();
+//     }
+// });
+
+// app.options("/*", function(req, res, next){
+//   res.setHeader('Access-Control-Allow-Origin', '*');
+//   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,  X-Total-Count');
+
+//   res.send(200);
+// });
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
