@@ -1,4 +1,5 @@
 var Sequelize = require('sequelize')
+var moment = require('moment')
 var ad_platform = require('../database/ad_platform')
 var CryptoJS = require('crypto-js')
 var console = process.console
@@ -6,6 +7,8 @@ var console = process.console
 var webPattern = ad_platform.import('../db_models/web_pattern.js')
 var available_js = ad_platform.import('../db_models/available_js.js')
 var pattern2js = ad_platform.import('../db_models/pattern2js.js')
+var platform_log  = ad_platform.import("../db_models/platform_log.js")
+var platform_user = ad_platform.import("../db_models/platform_user.js")
 // # Secert key for ad Encrypt & decrypt
 var secertkey = 'lifeOnMars'
 
@@ -211,6 +214,31 @@ exports.getAdBy_algorithm = function (ad_prob) {
     }
   };
   // return  result;
+}
+
+exports.loggingPlatformActivty = function (username, req, activity){
+  
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress
+  ip = ip.replace(/::ffff:/g, "")
+
+  platform_user.findOne({
+   where: {account: {$eq:username}}
+  }).then((result)=>{
+    // update lastlogin time
+    platform_user.update({
+      lastlogin_datetime: moment().format('YYYY-MM-DD hh:mm:ss a'),
+    }, {
+      where: {account: {$eq:username}}
+    })
+    // create platform log
+    platform_log.create({
+      ip          : ip,
+      user_id     : result.user_id,
+      activity    : activity,
+      create_datetime : moment().format('YYYY-MM-DD hh:mm:ss a')
+    })
+    // console.log(result.user_id)
+  })
 }
 
 function weightedRandom (items, itemsWeight) {
