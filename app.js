@@ -77,11 +77,12 @@ app.use('/ad',ad);
 // });
 
 // app.options("/*", function(req, res, next){
-//   res.setHeader('Access-Control-Allow-Origin', '*');
-//   res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-//   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,  X-Total-Count');
-
-//   res.send(200);
+//   // res.setHeader('Access-Control-Allow-Origin', '*');
+//   // res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+//   // res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,  X-Total-Count');
+//   // res.send(200)
+//   // res.sendStatus(200);
+//   next()
 // });
 
 // catch 404 and forward to error handler
@@ -96,7 +97,7 @@ app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-  console.log(err);
+  // console.log(err);
   // console.tag('Error').time().file().myLogger('res.locals.error');
   // render the error page
   res.status(err.status || 500);
